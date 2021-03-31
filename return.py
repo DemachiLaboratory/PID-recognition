@@ -7,7 +7,7 @@ import linecache
 
 rootdir = "/mnt/data/datasets/PID_YOLO/divide/adapted"  #images+labels acquire from 
 savepath = "/mnt/data/datasets/PID_YOLO/divide/adapted/return"  # images+labels save in 
-filedir = "/mnt/data/datasets/PID_YOLO/coordinate"
+filedir = rootdir+"/coordinate"
 
 def main():
     if os.path.isdir(savepath):
@@ -20,14 +20,38 @@ def main():
             print(filename)
             i = int(filename1[-6])
             j = int(filename1[-5])
-            path = os.path.join(rootdir,filename)
-            image = cv.imread(path)
-            size = image.shape
-            w = size [1]
-            h = size [0]
-            f = open(os.path.join(filedir,filename),'r') 
+            filename1 = filename[-3:] + 'txt'
+            f = open(os.path.join(filedir,filename1),'r') 
             lines = file.readlines()
             char = lines[0].strip().split(" ")
+            imx_min = int(char[0])
+            imx_max = int(char[1])
+            imy_min = int(char[2])
+            imy_max = int(char[3])
+            w = imx_max - imx_min
+            h = imy_max - imy_min
+            f.close()
+
+            #then, calculate the related coordinate of the whole orgin images
+            f = open(os.path.join(rootdir,filename1),'r') 
+            lines = file.readlines()
+            for line in lines : 
+                boxes = line.strip().split(" ")
+                xmin = (target[1]-target[3]/2)*w
+                ymin = (target[2]-target[4]/2)*h
+                xmax = (target[1]+target[3]/2)*w
+                ymax = (target[2]+target[4]/2)*h                  
+                # initiate the bounding boxes
+                boxes = []
+                confidences = []
+                classIDs = []
+                char[0] = int(char[0])
+                char[1] = ((xmin+xmax)/2 - maximum[1])/w_after_adapted
+                char[2] = ((ymin+ymax)/2 - maximum[3])/h_after_adapted
+                char[3] = (xmax-xmin)/w_after_adapted
+                char[4] = (ymax-ymin)/h_after_adapted                 
+
+
 
 
           
