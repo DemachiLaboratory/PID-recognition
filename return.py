@@ -4,10 +4,12 @@ import argparse
 import numpy as np
 import math
 import linecache
+from pre_process import show
 
 rootdir = "/mnt/data/datasets/PID_YOLO/divide/adapted"  #images+labels acquire from 
 savepath = "/mnt/data/datasets/PID_YOLO/divide/adapted/return"  # images+labels save in 
 filedir = rootdir+"/coordinate"
+class = 2  #read from the yaml in YOLO , here is just the setting
 
 def main():
     if os.path.isdir(savepath):
@@ -22,37 +24,53 @@ def main():
             j = int(filename1[-5])
             filename1 = filename[-3:] + 'txt'
             f = open(os.path.join(filedir,filename1),'r') 
-            lines = file.readlines()
-            char = lines[0].strip().split(" ")
-            imx_min = int(char[0])
-            imx_max = int(char[1])
-            imy_min = int(char[2])
-            imy_max = int(char[3])
+            lines = f.readlines()
+            img = lines[0].strip().split(" ")
+            imx_min = int(img[0])
+            imx_max = int(img[1])
+            imy_min = int(img[2])
+            imy_max = int(img[3])
             w = imx_max - imx_min
             h = imy_max - imy_min
             f.close()
 
             #then, calculate the related coordinate of the whole orgin images
             f = open(os.path.join(rootdir,filename1),'r') 
-            lines = file.readlines()
+            lines = f.readlines()
             for line in lines : 
-                boxes = line.strip().split(" ")
-                xmin = (target[1]-target[3]/2)*w
-                ymin = (target[2]-target[4]/2)*h
-                xmax = (target[1]+target[3]/2)*w
-                ymax = (target[2]+target[4]/2)*h                  
-                # initiate the bounding boxes
-                boxes = []
-                confidences = []
-                classIDs = []
-                char[0] = int(char[0])
-                char[1] = ((xmin+xmax)/2 - maximum[1])/w_after_adapted
-                char[2] = ((ymin+ymax)/2 - maximum[3])/h_after_adapted
-                char[3] = (xmax-xmin)/w_after_adapted
-                char[4] = (ymax-ymin)/h_after_adapted                 
+                box = line.strip().split(" ")
+                xmin = (box[1]-box[3]/2)*w
+                ymin = (box[2]-box[4]/2)*h
+                xmax = (box[1]+box[3]/2)*w
+                ymax = (box[2]+box[4]/2)*h                  
+                
 
+                char[0] = ((xmin+xmax)/2 - maximum[1])/w_after_adapted
+                char[1] = ((ymin+ymax)/2 - maximum[3])/h_after_adapted
+                char[2] = (xmax-xmin)/w_after_adapted
+                char[3] = (ymax-ymin)/h_after_adapted   
 
+                #for this verision              
+                #radomly set the confidence score of each bounding boxes(YOLO wii read from the)
+                score = round(np.random.random,2)
+                char[4] = score
+                char[5] = int(box[0])
 
+                #In YOLO
+                #set the output of the final layer for every object is a vector named : det[x,y,w,h,scores[]]
+#                confidence = det[4:]
+#                classID = np.argmax(confidence)
+#                score = confidence[classID]
+#                char[4] = classID
+#                char[5] = score
+
+                char = list(map(str,char))
+                filename_save = filename[:-7]+'.txt'
+                file = open(os.path.join(savepath,filename_save),'a+') 
+                file.write(' '.join(char))
+                file.write('\n')
+
+            f.close()                  
 
           
        
