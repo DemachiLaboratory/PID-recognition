@@ -186,7 +186,7 @@ def main():
                             f.close()
                     file.close()
     
-    show(savepath) #show the output of afapted images  
+#    show(savepath) #show the output of afapted images  
           
 
 #show the picture with labels and save the output picture
