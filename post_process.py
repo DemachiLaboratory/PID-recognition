@@ -24,7 +24,7 @@ def main():
     os.makedirs(savepath) 
     #First, read the absolute coordinate of cropped image from filedir
     filelist = os.listdir(rootdir) 
-    normalization = np.zeros(4)
+    filelist.sort()
     n = 0
     name = []
     #the normalization refers to the original size of image
@@ -104,7 +104,7 @@ def main():
             f.close()
     save = savepath + '/' + name[n-1] +'.jpg'
     cv.imwrite(save, final_matrix)    
- #   show(savepath)
+    show(savepath)
 
 def norm(name,maximum):
     filelist = os.listdir(rootdir)
