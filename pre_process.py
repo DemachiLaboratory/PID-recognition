@@ -6,8 +6,8 @@ import math
 import shutil
 
 
-rootdir = "/mnt/data/datasets/PID_YOLO"  #images+labels acquire from 
-savepath = "/mnt/data/datasets/PID_YOLO/divide"  # images+labels save in 
+rootdir = '/mnt/database/Dataset/PID_yolo/train'  #images+labels acquire from 
+savepath = '/mnt/database/Experiments/20210426_yolo/save_d/'  # images+labels save in 
 #rootdir = "D:/Download/PID_YOLO"
 #savepath = "D:/Download/PID_YOLO/train"
 
@@ -51,9 +51,14 @@ def main():
                 if not os.path.isdir(savepath + '/enlarge/'):
                     os.makedirs(savepath + '/enlarge/')
                 cv.imwrite(save, image)
-			#loop in turns of cropped images name, open the original label file one time  
+			#loop in turns of cropped images name, open the original label file one time            
             for i in range(h_count) :                    
                 for j in range(w_count) :
+                    a = 0
+                    b = 0
+                    c = 0
+                    if filename == 'H21-130-Z03-01.jpg' and i == 0 and j == 1:
+                        ccc = 0
                     f = open(savepath +'/' +filename[:-4]+'-'+str(i)+str(j)+'.txt','a+') 
                     f.close()
                     maximum = np.zeros(5)
@@ -144,6 +149,7 @@ def main():
                         
                     #save the cropped labels information according to adaptation information 
                     for line in lines :
+                        flag = 0
                         #calculate the absolute coordinate of the original picture 
                         #xmin and xmax refers to the minimum and maximum absolute x-axis coordinate of the bounding box respectively
                         #the same as ymin and ymax
@@ -240,6 +246,7 @@ def readrow(savepath,filename,maximum):
 
 if __name__ == '__main__':
     main()
+    show(savepath)
 
                    
     
