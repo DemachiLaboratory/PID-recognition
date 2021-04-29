@@ -127,8 +127,25 @@ class SlidingWindow:
                     save_path = os.path.join(self.save_dir, '{0}_{1}_{2}.jpg'.format(os.path.splitext(os.path.split(img_path)[1])[0], i, j))
                     cv2.imwrite(save_path, spl_img)
 
-    def merge(self):
-        pass
+    def merge(self, filename):
+        global_border = self.__get_global_border(filename)
+        global_w = global_border[1] - global_border[0]
+        global_h = global_border[3] - global_border[2]
+        global_img = np.zeros((int(global_border[3]), int(global_border[1]), 3), dtype=np.uint8)
+        for img_path in sorted(glob.glob(os.path.join(self.save_dir, '{}_?_?.jpg'.format(os.path.splitext(filename)[0])))):
+            i, j = self.__get_row_col_idx(img_path)
+            spl_img = cv2.imread(img_path)
+            adp_border_path = os.path.join(self.save_dir, 'adapted_borders', '{}.txt'.format(os.path.splitext(os.path.split(img_path)[1])[0]))
+            with open(adp_border_path, 'r') as f:
+                lines = f.readlines()
+                spl_border = list(map(float, lines[0].strip().split(' ')))
+                global_img[int(spl_border[2]):int(spl_border[3]), int(spl_border[0]):int(spl_border[1])] = spl_img
+        
+        save_dir = os.path.join(self.temp_dir, 'merge')
+        if not os.path.isdir(save_dir):
+            os.makedirs(save_dir)
+        save_path = os.path.join(save_dir, filename)
+        cv2.imwrite(save_path, global_img)
 
     def show(self):
         save_dir = os.path.join(self.temp_dir, 'split samples')
@@ -151,12 +168,28 @@ class SlidingWindow:
                     show = cv2.rectangle(img, (abs_xyxy[1], abs_xyxy[3]), (abs_xyxy[2], abs_xyxy[4]), (0,255,0), 2)
                     save_path = os.path.join(save_dir, 'output_{0}'.format(os.path.split(img_path)[1]))
                     cv2.imwrite(save_path, show)
+    
+    def __get_global_border(self, filename):
+        global_border = np.zeros(4)
+        for adp_border_path in glob.glob(os.path.join(self.save_dir, 'adapted_borders', '{}_?_?.txt'.format(os.path.splitext(filename)[0]))):
+            with open(adp_border_path, 'r') as f:
+                lines = f.readlines()
+                spl_border = list(map(float, lines[0].strip().split(' ')))
+                for idx in range(4):
+                    global_border[idx] = min(spl_border[idx], global_border[idx]) if idx % 2 == 0 else max(spl_border[idx], global_border[idx])
 
+        return global_border
+
+    def __get_row_col_idx(self, img_path):
+        idxs = os.path.splitext(os.path.split(img_path)[1])[0].strip().split('_')
+        return idxs[1], idxs[2]
+        
 if __name__ == '__main__':
     sw = SlidingWindow(root_dir='/mnt/database/Dataset/PID_yolo/train', 
                        save_dir='/mnt/database/Experiments/20210426_yolo/save/',
                        temp_dir='/mnt/database/Experiments/20210426_yolo/temp/',
                        resize=(1280, 1280), 
                        inter_ratio=0.15)
-    sw.split()
-    sw.show()
+    #sw.split()
+    #sw.show()
+    sw.merge('H21-420-01-Z04-01.jpg')

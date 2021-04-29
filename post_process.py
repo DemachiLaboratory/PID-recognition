@@ -9,8 +9,8 @@ from pre_process import show,clear
 
 #rootdir = "D:/Download/PID_YOLO/train"
 #savepath = "D:/Download/PID_YOLO/train/return"
-rootdir = "/mnt/data/datasets/PID_YOLO/divide"  #images+labels acquire from 
-savepath = "/mnt/data/datasets/PID_YOLO/divide/return"  # images+labels save in 
+rootdir = '/mnt/database/Experiments/20210426_yolo/save_d/'   #images+labels acquire from 
+savepath = '/mnt/database/Experiments/20210426_yolo/save_d/return/'   # images+labels save in 
 filedir = rootdir+"/coordinate"
 
 #rootdir refers to the cropped output ,savepath refers to the path for saving postprocess
