@@ -50,75 +50,76 @@ class SlidingWindow:
 
                     if not self.infer_mode:
                         with open(os.path.splitext(img_path)[0] + '.txt', 'r') as f:
-                            lines = f.readlines()
-                            # Extend the split sample according to the annotations
-                            for line in lines:
-                                flag = False
-                                rel_xyxy = list(map(float, line.strip().split(' ')))    # Relative coordinates
-                                abs_xyxy = [rel_xyxy[0], 
-                                            (rel_xyxy[1] - rel_xyxy[3] / 2) * ori_w,
-                                            (rel_xyxy[1] + rel_xyxy[3] / 2) * ori_w,
-                                            (rel_xyxy[2] - rel_xyxy[4] / 2) * ori_h,
-                                            (rel_xyxy[2] + rel_xyxy[4] / 2) * ori_h]    # Absoluate coordinates
-                                
-                                if (((ori_spl_border[2] > abs_xyxy[1] > ori_spl_border[1]) or 
-                                     (ori_spl_border[1] < abs_xyxy[2] < ori_spl_border[2])) and 
-                                    ((ori_spl_border[4] > abs_xyxy[3] > ori_spl_border[3]) or 
-                                     (ori_spl_border[3] < abs_xyxy[4] < ori_spl_border[4]))): 
-                                    flag = True 
-                                elif ((abs_xyxy[1] > ori_spl_border[1]) and (abs_xyxy[2] < ori_spl_border[2]) and
-                                      (abs_xyxy[3] < ori_spl_border[3]) and (abs_xyxy[4] > ori_spl_border[4])):
-                                    flag = True
-                                elif ((abs_xyxy[3] > ori_spl_border[3]) and (abs_xyxy[4] < ori_spl_border[4]) and
-                                      (abs_xyxy[1] < ori_spl_border[1]) and (abs_xyxy[2] > ori_spl_border[2])):
-                                    flag = True
+                            save_path = os.path.join(self.save_dir, '{0}_{1}_{2}.txt'.format(os.path.splitext(os.path.split(img_path)[1])[0], i, j))
+                            with open(save_path, 'a+') as af:
+                                lines = f.readlines()
+                                # Extend the split sample according to the annotations
+                                for line in lines:
+                                    flag = False
+                                    rel_xyxy = list(map(float, line.strip().split(' ')))    # Relative coordinates
+                                    abs_xyxy = [rel_xyxy[0], 
+                                                (rel_xyxy[1] - rel_xyxy[3] / 2) * ori_w,
+                                                (rel_xyxy[1] + rel_xyxy[3] / 2) * ori_w,
+                                                (rel_xyxy[2] - rel_xyxy[4] / 2) * ori_h,
+                                                (rel_xyxy[2] + rel_xyxy[4] / 2) * ori_h]    # Absoluate coordinates
+                                    
+                                    if (((ori_spl_border[2] > abs_xyxy[1] > ori_spl_border[1]) or 
+                                        (ori_spl_border[1] < abs_xyxy[2] < ori_spl_border[2])) and 
+                                        ((ori_spl_border[4] > abs_xyxy[3] > ori_spl_border[3]) or 
+                                        (ori_spl_border[3] < abs_xyxy[4] < ori_spl_border[4]))): 
+                                        flag = True 
+                                    elif ((abs_xyxy[1] > ori_spl_border[1]) and (abs_xyxy[2] < ori_spl_border[2]) and
+                                        (abs_xyxy[3] < ori_spl_border[3]) and (abs_xyxy[4] > ori_spl_border[4])):
+                                        flag = True
+                                    elif ((abs_xyxy[3] > ori_spl_border[3]) and (abs_xyxy[4] < ori_spl_border[4]) and
+                                        (abs_xyxy[1] < ori_spl_border[1]) and (abs_xyxy[2] > ori_spl_border[2])):
+                                        flag = True
 
-                                # Extend the split sample border by comparing to the absolute coordinates of annotations
-                                if flag: 
-                                    for idx in range(1, 5):
-                                        spl_border[idx] = max(spl_border[idx], abs_xyxy[idx]) if idx % 2 == 0 else min(spl_border[idx], abs_xyxy[idx])
+                                    # Extend the split sample border by comparing to the absolute coordinates of annotations
+                                    if flag: 
+                                        for idx in range(1, 5):
+                                            spl_border[idx] = max(spl_border[idx], abs_xyxy[idx]) if idx % 2 == 0 else min(spl_border[idx], abs_xyxy[idx])
 
-                            adp_w = spl_border[2] - spl_border[1] # Adapted width of the split sample
-                            adp_h = spl_border[4] - spl_border[3] # Adapted height of the split sample
+                                adp_w = spl_border[2] - spl_border[1] # Adapted width of the split sample
+                                adp_h = spl_border[4] - spl_border[3] # Adapted height of the split sample
 
-                            # Save the adapted border of the split sample
-                            adp_border_dir = os.path.join(self.save_dir, 'adapted_borders')
-                            if not os.path.isdir(adp_border_dir):
-                                os.makedirs(adp_border_dir)
-                            adp_border_path = os.path.join(adp_border_dir, '{0}_{1}_{2}.txt'.format(os.path.splitext(os.path.split(img_path)[1])[0], i, j))
-                            with open(adp_border_path, 'a+') as cf:
-                                cf.write(' '.join(list(map(str, spl_border[1:]))))
-                                cf.write('\n')
-                                
-                            # Save the annotations of each split sample
-                            for line in lines:
-                                flag = False
-                                rel_xyxy = list(map(float, line.strip().split(' ')))    # Relative coordinates
-                                abs_xyxy = [rel_xyxy[0], 
-                                            (rel_xyxy[1] - rel_xyxy[3] / 2) * ori_w,
-                                            (rel_xyxy[1] + rel_xyxy[3] / 2) * ori_w,
-                                            (rel_xyxy[2] - rel_xyxy[4] / 2) * ori_h,
-                                            (rel_xyxy[2] + rel_xyxy[4] / 2) * ori_h]    # Absoluate coordinates
+                                # Save the adapted border of the split sample
+                                adp_border_dir = os.path.join(self.save_dir, 'adapted_borders')
+                                if not os.path.isdir(adp_border_dir):
+                                    os.makedirs(adp_border_dir)
+                                adp_border_path = os.path.join(adp_border_dir, '{0}_{1}_{2}.txt'.format(os.path.splitext(os.path.split(img_path)[1])[0], i, j))
+                                with open(adp_border_path, 'a+') as cf:
+                                    cf.write(' '.join(list(map(str, spl_border[1:]))))
+                                    cf.write('\n')
+                                    
+                                # Save the annotations of each split sample
+                                for line in lines:
+                                    flag = False
+                                    rel_xyxy = list(map(float, line.strip().split(' ')))    # Relative coordinates
+                                    abs_xyxy = [rel_xyxy[0], 
+                                                (rel_xyxy[1] - rel_xyxy[3] / 2) * ori_w,
+                                                (rel_xyxy[1] + rel_xyxy[3] / 2) * ori_w,
+                                                (rel_xyxy[2] - rel_xyxy[4] / 2) * ori_h,
+                                                (rel_xyxy[2] + rel_xyxy[4] / 2) * ori_h]    # Absoluate coordinates
 
-                                if (abs_xyxy[1] > spl_border[1] and abs_xyxy[2] < spl_border[2] and 
-                                    abs_xyxy[3] > spl_border[3] and abs_xyxy[4] < spl_border[4]):
-                                    flag = True
-                                elif (((spl_border[2] > abs_xyxy[1] > spl_border[1]) or 
-                                       (spl_border[1] < abs_xyxy[2] < spl_border[2])) and 
-                                      ((spl_border[4] > abs_xyxy[3] > spl_border[3]) or 
-                                       (spl_border[3] < abs_xyxy[4] < spl_border[4]))):
-                                    flag = True
-                                    for idx in range(1, 5):
-                                        abs_xyxy[idx] = min(spl_border[idx], abs_xyxy[idx]) if idx % 2 == 0 else max(spl_border[idx], abs_xyxy[idx])
+                                    if (abs_xyxy[1] > spl_border[1] and abs_xyxy[2] < spl_border[2] and 
+                                        abs_xyxy[3] > spl_border[3] and abs_xyxy[4] < spl_border[4]):
+                                        flag = True
+                                    elif (((spl_border[2] > abs_xyxy[1] > spl_border[1]) or 
+                                        (spl_border[1] < abs_xyxy[2] < spl_border[2])) and 
+                                        ((spl_border[4] > abs_xyxy[3] > spl_border[3]) or 
+                                        (spl_border[3] < abs_xyxy[4] < spl_border[4]))):
+                                        flag = True
+                                        for idx in range(1, 5):
+                                            abs_xyxy[idx] = min(spl_border[idx], abs_xyxy[idx]) if idx % 2 == 0 else max(spl_border[idx], abs_xyxy[idx])
 
-                                if flag:
-                                    resize_ann = [int(rel_xyxy[0]),
-                                                  ((abs_xyxy[1] + abs_xyxy[2]) / 2 - spl_border[1]) / adp_w,
-                                                  ((abs_xyxy[3] + abs_xyxy[4]) / 2 - spl_border[3]) / adp_h,
-                                                  (abs_xyxy[2] - abs_xyxy[1]) / adp_w,
-                                                  (abs_xyxy[4] - abs_xyxy[3]) / adp_h]
-                                    save_path = os.path.join(self.save_dir, '{0}_{1}_{2}.txt'.format(os.path.splitext(os.path.split(img_path)[1])[0], i, j))
-                                    with open(save_path, 'a+') as af:
+                                    if flag:
+                                        resize_ann = [int(rel_xyxy[0]),
+                                                    ((abs_xyxy[1] + abs_xyxy[2]) / 2 - spl_border[1]) / adp_w,
+                                                    ((abs_xyxy[3] + abs_xyxy[4]) / 2 - spl_border[3]) / adp_h,
+                                                    (abs_xyxy[2] - abs_xyxy[1]) / adp_w,
+                                                    (abs_xyxy[4] - abs_xyxy[3]) / adp_h]
+                                        
                                         af.write(' '.join(list(map(str, resize_ann))))
                                         af.write('\n')
                                     
